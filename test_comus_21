@@ -1,0 +1,38 @@
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+import time
+
+
+def test_add_single_product_selected():
+    # Устанавливаем "жадную" загрузку страницы, чтобы не ждать пока выполнятся все скрипты.
+    options = webdriver.ChromeOptions()
+    options.page_load_strategy = 'eager'
+    driver = webdriver.Chrome(options=options)
+
+    driver.get("https://www.komus.ru/")
+
+    # Открываем окно на весь экран
+    driver.maximize_window()
+
+    # Нажимаем на кнопку - подтверждаем, что мы приняли Cookies
+    time.sleep(1)
+    driver.find_element(By.XPATH, "//div[@id='cookieNotificationBanner']//button").click()
+
+    time.sleep(1)
+    search_input = driver.find_element(By.XPATH, "//input[@placeholder='Введите название или артикул товара']")
+    search_input.send_keys("Арт. 90391")
+
+    time.sleep(1)
+    search_wrapper = driver.find_element(By.XPATH, "//button[@type='button' and contains(@class, 'v-input-search__search-button')]")
+    search_wrapper.click()
+
+    # Заменяем text() на точку для более надёжного поиска по тексту элемента
+    time.sleep(1)
+    add_to_selected = driver.find_element(By.XPATH, "//div[@content='Добавить в избранное']/button")
+    add_to_selected.click()
+
+    time.sleep(1)
+    # Находим элемент - избранное в правом верхнем углу - и от неё дочерний элемент - счётчик
+    element = driver.find_element(By.XPATH, "//a[@href='/favorites/viewFavorites?from=top_icon']//span[contains(@class, 'js-update-favorite-count')]")
+    assert "favorite-counter__count js-update-favorite-count" in element.get_attribute("class")
+    assert element.text == "1"
